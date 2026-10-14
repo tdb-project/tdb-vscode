@@ -5,9 +5,14 @@
   "version": "0.1.0",
   "publisher": "tdb-project",
   "license": "MIT",
+  "icon": "icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/tdb-project/tdb-vscode"
+  },
+  "homepage": "https://docs.tdb.jiracorp.co.in/getting-started/ide-setup/",
+  "bugs": {
+    "url": "https://github.com/tdb-project/tdb-vscode/issues"
   },
   "engines": {
     "vscode": "^1.101.0"
