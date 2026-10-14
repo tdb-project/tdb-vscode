@@ -59,6 +59,7 @@ suite("extension", () => {
   let fake: Awaited<ReturnType<typeof startFakeTdb>>;
 
   suiteSetup(async () => {
+    console.log(`VS Code ${vscode.version}`);
     api = await vscode.extensions.getExtension<TdbExtensionApi>("tdb-project.tdb-vscode")!.activate();
     fake = await startFakeTdb();
   });
