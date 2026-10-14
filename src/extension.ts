@@ -1,18 +1,35 @@
 import * as vscode from "vscode";
 
 const API_KEY_SECRET = "tdb.apiKey";
+const STATUS_REFRESH_MS = 60_000;
+
+// VS Code negotiates this version at initialize but never sends the header
+// afterwards, so TDB would answer every later request as 2024-11-05. If VS Code
+// starts sending its own header, its value overrides this one.
+const MCP_PROTOCOL_VERSION = "2025-11-25";
 
 export function activate(context: vscode.ExtensionContext): void {
   const changed = new vscode.EventEmitter<void>();
+  const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+  status.show();
+  const refreshStatus = () => void updateStatus(status);
+  const timer = setInterval(refreshStatus, STATUS_REFRESH_MS);
 
   context.subscriptions.push(
     changed,
+    status,
+    { dispose: () => clearInterval(timer) },
+    changed.event(refreshStatus),
     vscode.lm.registerMcpServerDefinitionProvider("tdb.mcp", {
       onDidChangeMcpServerDefinitions: changed.event,
       provideMcpServerDefinitions: () => {
         const url = serverUrl();
         return url
-          ? [new vscode.McpHttpServerDefinition("The Data-Bridge (TDB)", vscode.Uri.parse(`${url}/v1/mcp`))]
+          ? [
+              new vscode.McpHttpServerDefinition("The Data-Bridge (TDB)", vscode.Uri.parse(`${url}/v1/mcp`), {
+                "MCP-Protocol-Version": MCP_PROTOCOL_VERSION,
+              }),
+            ]
           : [];
       },
       resolveMcpServerDefinition: async (server) => {
@@ -35,7 +52,9 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
     vscode.commands.registerCommand("tdb.connect", (url?: string, key?: string) => connect(context, url, key)),
+    vscode.commands.registerCommand("tdb.disconnect", () => disconnect(context)),
   );
+  refreshStatus();
 }
 
 function serverUrl(): string {
@@ -63,6 +82,11 @@ async function connect(context: vscode.ExtensionContext, url?: string, key?: str
     .update("serverUrl", url.trim().replace(/\/+$/, ""), vscode.ConfigurationTarget.Global);
 }
 
+async function disconnect(context: vscode.ExtensionContext): Promise<void> {
+  await context.secrets.delete(API_KEY_SECRET);
+  await vscode.workspace.getConfiguration("tdb").update("serverUrl", undefined, vscode.ConfigurationTarget.Global);
+}
+
 async function promptForKey(context: vscode.ExtensionContext): Promise<string | undefined> {
   const key = (
     await vscode.window.showInputBox({
@@ -76,4 +100,26 @@ async function promptForKey(context: vscode.ExtensionContext): Promise<string | 
     await context.secrets.store(API_KEY_SECRET, key);
   }
   return key || undefined;
+}
+
+async function updateStatus(status: vscode.StatusBarItem): Promise<void> {
+  const url = serverUrl();
+  status.command = "tdb.connect";
+  if (!url) {
+    status.text = "$(plug) TDB";
+    status.tooltip = "TDB: not connected. Click to connect.";
+    return;
+  }
+  try {
+    const res = await fetch(`${url}/`, { signal: AbortSignal.timeout(5_000) });
+    const version = res.ok ? ((await res.json()) as { version?: unknown }).version : undefined;
+    if (typeof version !== "string") {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    status.text = `$(database) TDB ${version}`;
+    status.tooltip = `TDB ${version} at ${url}. Click to change server.`;
+  } catch {
+    status.text = "$(warning) TDB";
+    status.tooltip = `TDB unreachable at ${url}. Click to change server.`;
+  }
 }

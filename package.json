@@ -35,6 +35,11 @@
         "command": "tdb.connect",
         "title": "Connect to Server",
         "category": "TDB"
+      },
+      {
+        "command": "tdb.disconnect",
+        "title": "Disconnect",
+        "category": "TDB"
       }
     ],
     "configuration": {
