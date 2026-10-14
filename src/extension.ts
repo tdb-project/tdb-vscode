@@ -8,7 +8,14 @@ const STATUS_REFRESH_MS = 60_000;
 // starts sending its own header, its value overrides this one.
 const MCP_PROTOCOL_VERSION = "2025-11-25";
 
-export function activate(context: vscode.ExtensionContext): void {
+// Returned from activate() so the tests can observe what VS Code's API does not
+// expose. It reveals whether a key is stored, never the key.
+export interface TdbExtensionApi {
+  statusText(): string;
+  hasApiKey(): Promise<boolean>;
+}
+
+export function activate(context: vscode.ExtensionContext): TdbExtensionApi {
   const changed = new vscode.EventEmitter<void>();
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
   status.show();
@@ -55,6 +62,10 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("tdb.disconnect", () => disconnect(context)),
   );
   refreshStatus();
+  return {
+    statusText: () => status.text,
+    hasApiKey: async () => (await context.secrets.get(API_KEY_SECRET)) !== undefined,
+  };
 }
 
 function serverUrl(): string {
