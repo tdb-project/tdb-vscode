@@ -70,5 +70,9 @@
     "esbuild": "0.28.2",
     "ovsx": "1.2.0",
     "typescript": "7.0.2"
+  },
+  "overrides": {
+    "diff": "8.0.3",
+    "serialize-javascript": "7.0.5"
   }
 }
