@@ -10,6 +10,8 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
     steps:
       - uses: actions/checkout@v5
 
@@ -32,17 +34,22 @@ jobs:
           node esbuild.mjs --production
           npx vsce package --out tdb-vscode.vsix
 
-      - name: Publish to the VS Code Marketplace
+      - name: GitHub release with the .vsix
         env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" tdb-vscode.vsix --title "$GITHUB_REF_NAME" --generate-notes
+
+      # Marketplace publishing needs an Azure DevOps token. Without one, upload
+      # the release's .vsix at https://marketplace.visualstudio.com/manage.
+      - name: Publish to the VS Code Marketplace
+        if: env.VSCE_PAT != ''
         run: npx vsce publish --packagePath tdb-vscode.vsix
+
+      - name: Marketplace upload is manual
+        if: env.VSCE_PAT == ''
+        run: echo "::notice::VSCE_PAT not set. Upload tdb-vscode.vsix from the GitHub release at https://marketplace.visualstudio.com/manage"
 
       - name: Publish to Open VSX
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
         run: npx ovsx publish tdb-vscode.vsix
-
-      - name: GitHub release with the .vsix
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" tdb-vscode.vsix --title "$GITHUB_REF_NAME" --generate-notes

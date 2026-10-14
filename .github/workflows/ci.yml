@@ -35,7 +35,7 @@ jobs:
           echo "TDB_TEST_KEY=$key" >> "$GITHUB_ENV"
           docker run -d --name tdb -p 8000:8000 -e TDB_API_KEYS="$key" \
             -v "$PWD/test-data:/data:ro" ghcr.io/tdb-project/tdb-community:latest
-          for i in $(seq 30); do curl -sf http://localhost:8000/health && break; sleep 1; done
+          for _ in $(seq 30); do curl -sf http://localhost:8000/health && break; sleep 1; done
           curl -sf -X POST http://localhost:8000/v1/sources \
             -H "Authorization: Bearer $key" -H "Content-Type: application/json" \
             -d '{"name":"t","source_type":"csv","connection":{"file_path":"/data/t.csv"}}'
