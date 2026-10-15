@@ -82,6 +82,28 @@ suite("extension", () => {
     assert.strictEqual(headers.origin, undefined);
   });
 
+  test("Connect with a new key, then a new URL, takes effect without a reload", async () => {
+    const other = await startFakeTdb();
+    try {
+      const startUntil = async (seen: Seen[], auth: string) =>
+        waitFor(
+          async () => {
+            await vscode.commands.executeCommand("workbench.mcp.startServer", "*", { autoTrustChanges: true });
+            return seen.some((s) => s.headers.authorization === auth);
+          },
+          () => `no request carried ${auth}; saw ${JSON.stringify(seen.map((s) => s.headers.authorization))}`,
+        );
+      await vscode.commands.executeCommand("tdb.connect", fake.url, "k-first");
+      await startUntil(fake.seen, "Bearer k-first");
+      await vscode.commands.executeCommand("tdb.connect", fake.url, "k-second");
+      await startUntil(fake.seen, "Bearer k-second");
+      await vscode.commands.executeCommand("tdb.connect", other.url, "k-second");
+      await startUntil(other.seen, "Bearer k-second");
+    } finally {
+      other.close();
+    }
+  });
+
   test("disconnect removes the key and the server URL", async () => {
     await vscode.commands.executeCommand("tdb.connect", fake.url, "k-test-123");
     assert.strictEqual(await api.hasApiKey(), true);

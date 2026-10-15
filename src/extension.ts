@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import * as vscode from "vscode";
 
 const API_KEY_SECRET = "tdb.apiKey";
@@ -29,15 +30,24 @@ export function activate(context: vscode.ExtensionContext): TdbExtensionApi {
     changed.event(refreshStatus),
     vscode.lm.registerMcpServerDefinitionProvider("tdb.mcp", {
       onDidChangeMcpServerDefinitions: changed.event,
-      provideMcpServerDefinitions: () => {
+      provideMcpServerDefinitions: async () => {
         const url = serverUrl();
-        return url
-          ? [
-              new vscode.McpHttpServerDefinition("The Data-Bridge (TDB)", vscode.Uri.parse(`${url}/v1/mcp`), {
-                "MCP-Protocol-Version": MCP_PROTOCOL_VERSION,
-              }),
-            ]
-          : [];
+        if (!url) {
+          return [];
+        }
+        // VS Code identifies this server by its label and keeps reusing the URL and
+        // key it first resolved until `version` changes, so the version carries a
+        // one-way fingerprint of both: switching either makes it a new server.
+        const key = (await context.secrets.get(API_KEY_SECRET)) ?? "";
+        const fingerprint = createHash("sha256").update(`${url}\n${key}`).digest("hex").slice(0, 12);
+        return [
+          new vscode.McpHttpServerDefinition(
+            "The Data-Bridge (TDB)",
+            vscode.Uri.parse(`${url}/v1/mcp`),
+            { "MCP-Protocol-Version": MCP_PROTOCOL_VERSION },
+            fingerprint,
+          ),
+        ];
       },
       resolveMcpServerDefinition: async (server) => {
         const key = (await context.secrets.get(API_KEY_SECRET)) ?? (await promptForKey(context));
