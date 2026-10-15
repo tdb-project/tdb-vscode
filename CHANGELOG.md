@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1
+
+- **Fix:** running **TDB: Connect to Server** with a new API key or a new server URL
+  now takes effect straight away. Before, VS Code kept using the first URL and key
+  it had connected with until it was restarted, even after **TDB: Disconnect**.
+  Anyone who switches servers or rotates keys should update.
+
 ## 0.1.0
 
 First release.
