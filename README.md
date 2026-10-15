@@ -16,8 +16,8 @@ into `mcp.json` or your settings.
 - **A running TDB server** and an API key for it.
   - **Community edition (free):** one CSV source, the `query_source` tool. See the
     [quickstart](https://docs.tdb.jiracorp.co.in/getting-started/community/).
-  - **Enterprise:** databases and more tools, governed by your key's role and its
-    `allowed_tools`.
+  - **Enterprise:** databases and seven tools. Every key sees all seven; a key with
+    an `allowed_tools` list is refused when it calls a tool outside that list.
 - An agent that can use MCP tools, such as GitHub Copilot in agent mode.
 
 ## Getting started

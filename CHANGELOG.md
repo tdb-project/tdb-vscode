@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2
+
+- **Docs:** the README now says correctly how enterprise tool access works. Every key
+  sees all seven tools; a key with an `allowed_tools` list is refused when it calls a
+  tool outside it. It had said tools were governed by the key's role, which does not
+  affect MCP tools. No code change.
+
 ## 0.1.1
 
 - **Fix:** running **TDB: Connect to Server** with a new API key or a new server URL

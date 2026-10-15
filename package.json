@@ -2,7 +2,7 @@
   "name": "tdb-vscode",
   "displayName": "The Data-Bridge (TDB)",
   "description": "Connect VS Code agent mode to a TDB MCP server: governed, audited, read-only SQL over your data.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "tdb-project",
   "license": "MIT",
   "icon": "icon.png",
