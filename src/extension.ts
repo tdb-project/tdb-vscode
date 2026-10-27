@@ -1,7 +1,8 @@
-import { createHash } from "node:crypto";
+import { createHmac, randomBytes } from "node:crypto";
 import * as vscode from "vscode";
 
 const API_KEY_SECRET = "tdb.apiKey";
+const FINGERPRINT_SALT_SECRET = "tdb.fingerprintSalt";
 const STATUS_REFRESH_MS = 60_000;
 
 // VS Code negotiates this version at initialize but never sends the header
@@ -37,9 +38,14 @@ export function activate(context: vscode.ExtensionContext): TdbExtensionApi {
         }
         // VS Code identifies this server by its label and keeps reusing the URL and
         // key it first resolved until `version` changes, so the version carries a
-        // one-way fingerprint of both: switching either makes it a new server.
+        // fingerprint of both: switching either makes it a new server. VS Code stores
+        // and shows the version, and keys can be operator-chosen, so it is an HMAC
+        // under a per-install secret rather than a bare hash a weak key falls to.
         const key = (await context.secrets.get(API_KEY_SECRET)) ?? "";
-        const fingerprint = createHash("sha256").update(`${url}\n${key}`).digest("hex").slice(0, 12);
+        const fingerprint = createHmac("sha256", await fingerprintSalt(context))
+          .update(`${url}\n${key}`)
+          .digest("hex")
+          .slice(0, 12);
         return [
           new vscode.McpHttpServerDefinition(
             "The Data-Bridge (TDB)",
@@ -101,6 +107,15 @@ async function connect(context: vscode.ExtensionContext, url?: string, key?: str
   await vscode.workspace
     .getConfiguration("tdb")
     .update("serverUrl", url.trim().replace(/\/+$/, ""), vscode.ConfigurationTarget.Global);
+}
+
+async function fingerprintSalt(context: vscode.ExtensionContext): Promise<string> {
+  let salt = await context.secrets.get(FINGERPRINT_SALT_SECRET);
+  if (!salt) {
+    salt = randomBytes(32).toString("hex");
+    await context.secrets.store(FINGERPRINT_SALT_SECRET, salt);
+  }
+  return salt;
 }
 
 async function disconnect(context: vscode.ExtensionContext): Promise<void> {
