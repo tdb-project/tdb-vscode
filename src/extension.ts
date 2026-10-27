@@ -1,5 +1,8 @@
-import { createHmac, randomBytes } from "node:crypto";
+import { randomBytes, scrypt } from "node:crypto";
+import { promisify } from "node:util";
 import * as vscode from "vscode";
+
+const scryptAsync = promisify(scrypt) as (password: string, salt: string, keylen: number) => Promise<Buffer>;
 
 const API_KEY_SECRET = "tdb.apiKey";
 const FINGERPRINT_SALT_SECRET = "tdb.fingerprintSalt";
@@ -39,13 +42,10 @@ export function activate(context: vscode.ExtensionContext): TdbExtensionApi {
         // VS Code identifies this server by its label and keeps reusing the URL and
         // key it first resolved until `version` changes, so the version carries a
         // fingerprint of both: switching either makes it a new server. VS Code stores
-        // and shows the version, and keys can be operator-chosen, so it is an HMAC
-        // under a per-install secret rather than a bare hash a weak key falls to.
+        // and shows the version, and keys can be operator-chosen, so it is a salted
+        // scrypt rather than a bare hash a weak key falls to.
         const key = (await context.secrets.get(API_KEY_SECRET)) ?? "";
-        const fingerprint = createHmac("sha256", await fingerprintSalt(context))
-          .update(`${url}\n${key}`)
-          .digest("hex")
-          .slice(0, 12);
+        const fingerprint = (await scryptAsync(`${url}\n${key}`, await fingerprintSalt(context), 6)).toString("hex");
         return [
           new vscode.McpHttpServerDefinition(
             "The Data-Bridge (TDB)",
