@@ -5,8 +5,9 @@
 - **Security:** the server version VS Code stores and shows for TDB was derived from
   the server URL and API key with a plain SHA-256, so a short or guessable key could
   be recovered from it offline. It is now a salted scrypt hash, with the salt kept in
-  VS Code's secret storage beside the key. After updating, VS Code sees the TDB server
-  as changed once and reconnects; nothing needs re-entering.
+  VS Code's secret storage beside the key. After updating, VS Code restarts the TDB
+  server once, as it does after **TDB: Connect to Server** with a new key. The stored
+  URL and key are kept.
 - Build tooling only (not part of the installed extension): dependency updates that
   clear every open advisory, and a read-only token for CI.
 
