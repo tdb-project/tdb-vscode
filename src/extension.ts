@@ -35,25 +35,33 @@ export function activate(context: vscode.ExtensionContext): TdbExtensionApi {
     vscode.lm.registerMcpServerDefinitionProvider("tdb.mcp", {
       onDidChangeMcpServerDefinitions: changed.event,
       provideMcpServerDefinitions: async () => {
-        const url = serverUrl();
-        if (!url) {
-          return [];
+        for (;;) {
+          const url = serverUrl();
+          if (!url) {
+            return [];
+          }
+          // VS Code identifies this server by its label and keeps reusing the URL and
+          // key it first resolved until `version` changes, so the version carries a
+          // fingerprint of both: switching either makes it a new server. VS Code stores
+          // and shows the version, and keys can be operator-chosen, so it is a salted
+          // scrypt rather than a bare hash a weak key falls to.
+          const key = (await context.secrets.get(API_KEY_SECRET)) ?? "";
+          const fingerprint = (await scryptAsync(`${url}\n${key}`, await fingerprintSalt(context), 6)).toString("hex");
+          // The scrypt takes ~100 ms. Disconnect clears the key and then the URL, each
+          // firing a change, and VS Code keeps whichever call resolves last — so a call
+          // that started before the URL was cleared must not return the old server.
+          if (serverUrl() !== url || ((await context.secrets.get(API_KEY_SECRET)) ?? "") !== key) {
+            continue;
+          }
+          return [
+            new vscode.McpHttpServerDefinition(
+              "The Data-Bridge (TDB)",
+              vscode.Uri.parse(`${url}/v1/mcp`),
+              { "MCP-Protocol-Version": MCP_PROTOCOL_VERSION },
+              fingerprint,
+            ),
+          ];
         }
-        // VS Code identifies this server by its label and keeps reusing the URL and
-        // key it first resolved until `version` changes, so the version carries a
-        // fingerprint of both: switching either makes it a new server. VS Code stores
-        // and shows the version, and keys can be operator-chosen, so it is a salted
-        // scrypt rather than a bare hash a weak key falls to.
-        const key = (await context.secrets.get(API_KEY_SECRET)) ?? "";
-        const fingerprint = (await scryptAsync(`${url}\n${key}`, await fingerprintSalt(context), 6)).toString("hex");
-        return [
-          new vscode.McpHttpServerDefinition(
-            "The Data-Bridge (TDB)",
-            vscode.Uri.parse(`${url}/v1/mcp`),
-            { "MCP-Protocol-Version": MCP_PROTOCOL_VERSION },
-            fingerprint,
-          ),
-        ];
       },
       resolveMcpServerDefinition: async (server) => {
         const key = (await context.secrets.get(API_KEY_SECRET)) ?? (await promptForKey(context));
