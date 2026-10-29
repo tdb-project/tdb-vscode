@@ -28,6 +28,13 @@ into `mcp.json` or your settings.
 4. In agent mode, open the tools picker. **The Data-Bridge (TDB)** is listed with its
    tools. Ask your agent a question about your data.
 
+Use a local **Agent** chat. VS Code passes MCP servers on to **Copilot CLI** chat
+sessions without their headers, and a Copilot CLI session cannot read VS Code's secret
+storage, so it reaches TDB without your key and every call is refused with
+`missing_api_key` (seen with VS Code 1.144). To use TDB from Copilot CLI, add it to
+`~/.copilot/mcp-config.json` as described in
+[IDE setup](https://docs.tdb.jiracorp.co.in/getting-started/ide-setup/#vs-code).
+
 The status bar shows the connection: the server's version when it is reachable, a
 warning when it is not, and a plug when you are not connected. Click it to connect
 or change servers.
@@ -46,6 +53,12 @@ or change servers.
 | `tdb.serverUrl` | `""` | Base URL of the TDB server. Set by **TDB: Connect to Server**. |
 
 The API key is never a setting.
+
+There is no Lean Mode setting here. TDB's smaller results for agents
+([Lean Mode](https://docs.tdb.jiracorp.co.in/api/mcp/#saving-tokens-lean-mode), about a
+third fewer tokens on a 100-row answer) are set on the server: per call (*"use
+lean: true"*), per API key in enterprise, or for everyone with `TDB_LEAN_MODE=on`. They
+reach VS Code with no change here.
 
 ## What the extension sends
 
