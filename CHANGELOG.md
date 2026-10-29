@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.4
+
+- **Docs only, no code change.** The README now says:
+  - Use a local **Agent** chat. VS Code passes MCP servers to **Copilot CLI** sessions
+    without their headers, so those sessions reach TDB without your key and are refused.
+  - Lean Mode (smaller results for agents) is set on the TDB server, not in the extension.
+  - An enterprise key with an `allowed_tools` list sees only those tools (from enterprise
+    0.19.0). It used to say every key sees all seven.
+
 ## 0.1.3
 
 - **Security:** the server version VS Code stores and shows for TDB was derived from
