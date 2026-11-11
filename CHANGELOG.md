@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.5
+
+- **Docs only, no code change.** The Data-Bridge documentation moved to
+  `docs.tdb.asvanlabs.com` and the product site to `tdb.asvanlabs.com`; the extension's
+  homepage and README links point there. The old addresses redirect.
+
 ## 0.1.4
 
 - **Docs only, no code change.** The README now says:

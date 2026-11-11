@@ -1,6 +1,6 @@
 # The Data-Bridge (TDB) for VS Code
 
-Connect VS Code's agent mode to a [TDB](https://docs.tdb.jiracorp.co.in) server. Your
+Connect VS Code's agent mode to a [TDB](https://docs.tdb.asvanlabs.com) server. Your
 agent gets governed, read-only SQL over your data, and every tool call is recorded in
 TDB's audit log.
 
@@ -15,7 +15,7 @@ into `mcp.json` or your settings.
   requests.
 - **A running TDB server** and an API key for it.
   - **Community edition (free):** one CSV source, the `query_source` tool. See the
-    [quickstart](https://docs.tdb.jiracorp.co.in/getting-started/community/).
+    [quickstart](https://docs.tdb.asvanlabs.com/getting-started/community/).
   - **Enterprise:** databases and seven tools. A key with an `allowed_tools` list sees
     only those tools (enterprise 0.19.0 and later) and is refused if it calls another.
 - An agent that can use MCP tools, such as GitHub Copilot in agent mode.
@@ -33,7 +33,7 @@ sessions without their headers, and a Copilot CLI session cannot read VS Code's 
 storage, so it reaches TDB without your key and every call is refused with
 `missing_api_key` (seen with VS Code 1.144). To use TDB from Copilot CLI, add it to
 `~/.copilot/mcp-config.json` as described in
-[IDE setup](https://docs.tdb.jiracorp.co.in/getting-started/ide-setup/#vs-code).
+[IDE setup](https://docs.tdb.asvanlabs.com/getting-started/ide-setup/#vs-code).
 
 The status bar shows the connection: the server's version when it is reachable, a
 warning when it is not, and a plug when you are not connected. Click it to connect
@@ -55,7 +55,7 @@ or change servers.
 The API key is never a setting.
 
 There is no Lean Mode setting here. TDB's smaller results for agents
-([Lean Mode](https://docs.tdb.jiracorp.co.in/api/mcp/#saving-tokens-lean-mode), about a
+([Lean Mode](https://docs.tdb.asvanlabs.com/api/mcp/#saving-tokens-lean-mode), about a
 third fewer tokens on a 100-row answer) are set on the server: per call (*"use
 lean: true"*), per API key in enterprise, or for everyone with `TDB_LEAN_MODE=on`. They
 reach VS Code with no change here.
@@ -72,20 +72,20 @@ reach VS Code with no change here.
 
 The extension collects no telemetry. TDB's audit log records each call with
 `mcp_client` set to `Visual Studio Code/<version>`. See
-[audit logging](https://docs.tdb.jiracorp.co.in/security/audit/).
+[audit logging](https://docs.tdb.asvanlabs.com/security/audit/).
 
 ## OAuth (Enterprise)
 
 This extension authenticates with an API key or a JWT. To sign in with OAuth 2.1
 instead, configure VS Code's own MCP client in `mcp.json`. It runs the OAuth flow
-itself. See [IDE setup](https://docs.tdb.jiracorp.co.in/getting-started/ide-setup/).
+itself. See [IDE setup](https://docs.tdb.asvanlabs.com/getting-started/ide-setup/).
 
 ## Other editors
 
 The extension is also published on [Open VSX](https://open-vsx.org/extension/tdb-project/tdb-vscode).
 It needs an editor that supports VS Code's MCP server provider API. For any other
 MCP client, configure it by hand as described in
-[IDE setup](https://docs.tdb.jiracorp.co.in/getting-started/ide-setup/).
+[IDE setup](https://docs.tdb.asvanlabs.com/getting-started/ide-setup/).
 
 ## License
 
