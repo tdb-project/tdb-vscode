@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.6
+
+- **Icon only, no code change.** The extension uses The Data-Bridge's new mark: a white arch
+  over a teal deck on two piers, on the Asvan Labs tile.
+
 ## 0.1.5
 
 - **Docs only, no code change.** The Data-Bridge documentation moved to
