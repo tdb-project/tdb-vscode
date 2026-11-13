@@ -79,6 +79,7 @@
   "overrides": {
     "@azure/msal-node": "7.1.1",
     "diff": "8.0.3",
+    "minimatch": "11.0.8",
     "serialize-javascript": "7.1.4"
   }
 }
